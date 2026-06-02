@@ -1,0 +1,2905 @@
+{
+  "info": {
+    "_postman_id": "ece87b06-946d-440e-afb6-dfa8ccc2c43e",
+    "name": "USPMI Server — Полная коллекция тестов",
+    "description": "Тесты для Go-сервера системы ультразвуковой пропитки (УСПМИ). Перед запуском установите переменную `baseUrl` = http://localhost:8080. После выполнения запроса Login токен сохраняется автоматически.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53788402",
+    "_collection_link": "https://go.postman.co/collection/53788402-ece87b06-946d-440e-afb6-dfa8ccc2c43e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1. Авторизация",
+      "item": [
+        {
+          "name": "1.1 Login — Admin (успех)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Есть токен', () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('adminToken', body.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"admin\",\"Password\":\"admin123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Login — Неверный пароль (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('Сообщение об ошибке', () => pm.expect(body.error).to.equal('invalid credentials'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"admin\",\"Password\":\"wrongpass\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Login — Несуществующий пользователь (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"nobody\",\"Password\":\"pass\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Защищённый эндпоинт без токена (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tables",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tables"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Администратор — Пользователи и таблицы",
+      "item": [
+        {
+          "name": "2.1 Регистрация нового Director",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Сообщение user created', () => pm.expect(pm.response.json().message).to.equal('user created'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"director1\",\"Password\":\"dir123\",\"Role\":\"director\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Регистрация Technologist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"tech1\",\"Password\":\"tech123\",\"Role\":\"technologist\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Регистрация Operator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"operator1\",\"Password\":\"op123\",\"Role\":\"operator\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Регистрация — Невалидная роль (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Ошибка invalid role', () => pm.expect(pm.response.json().error).to.equal('invalid role'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"bad\",\"Password\":\"x\",\"Role\":\"superuser\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 GET /admin/tables — Список таблиц",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Поле tables — массив', () => pm.expect(body.tables).to.be.an('array').and.not.empty);",
+                  "pm.test('Поле schemas — объект', () => pm.expect(body.schemas).to.be.an('object'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tables",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tables"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.6 GET /admin/data/users — Список пользователей (пагинация)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Заголовок X-Total-Count присутствует', () => pm.expect(pm.response.headers.get('X-Total-Count')).to.not.be.null);",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/data/users/?limit=10&page=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "data",
+                "users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.7 GET /admin/data — Неизвестная таблица (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/data/nonexistent_table",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "data",
+                "nonexistent_table"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.8 Admin — Доступ запрещён для Director (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Нужен director-токен; если пуст, тест пропускается",
+                  "if (!pm.collectionVariables.get('directorToken')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{directorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/tables",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "tables"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "— Логин Director (получение токена)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('directorToken', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"director1\",\"Password\":\"dir123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "— Логин Tech (получение токена)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('techToken', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"tech1\",\"Password\":\"tech123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "— Логин Operator (получение токена)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('operatorToken', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Username\":\"operator1\",\"Password\":\"op123\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Менеджер — Клиенты",
+      "item": [
+        {
+          "name": "3.1 POST /manager/clients — Создание клиента",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Сообщение created', () => pm.expect(pm.response.json().message).to.equal('created'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"FirstName\":\"Иван\",\"LastName\":\"Петров\",\"PatronymicName\":\"Сергеевич\",\"Email\":\"ivan.petrov@example.com\",\"Phone\":\"+79001234567\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 GET /manager/clients — Список клиентов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Тело — массив', () => pm.expect(arr).to.be.an('array'));",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdClientId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 GET /manager/clients — Мета-формат (with_meta=1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Поле data есть', () => pm.expect(body.data).to.be.an('array'));",
+                  "pm.test('Поле meta есть', () => pm.expect(body.meta).to.be.an('object'));",
+                  "pm.test('meta.page = 1', () => pm.expect(body.meta.page).to.equal(1));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients/?with_meta=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "with_meta",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 PUT /manager/clients/:id — Обновление клиента",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"FirstName\":\"Иван\",\"LastName\":\"Петров\",\"PatronymicName\":\"Сергеевич\",\"Email\":\"ivan.updated@example.com\",\"Phone\":\"+79001234567\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients/{{createdClientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients",
+                "{{createdClientId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 DELETE /manager/clients/:id — Удаление клиента",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients/{{createdClientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients",
+                "{{createdClientId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Менеджер — Заказы и статистика",
+      "item": [
+        {
+          "name": "4.1 POST /manager/orders — Создание заказа",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ClientID\":1,\"RecipeID\":1,\"DateOrdered\":\"2025-06-01T00:00:00Z\",\"OrderNumber\":1001,\"Status\":\"new\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 GET /manager/orders — Список заказов с Preload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Тело — массив', () => pm.expect(arr).to.be.an('array'));",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdOrderId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 GET /manager/stats?period=month",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Поле period', () => pm.expect(body.period).to.equal('month'));",
+                  "pm.test('Поле total_orders', () => pm.expect(body.total_orders).to.be.a('number'));",
+                  "pm.test('Поле by_recipe', () => pm.expect(body.by_recipe).to.be.an('array'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/stats?period=month",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "stats"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 GET /manager/stats?period=week",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('period=week', () => pm.expect(pm.response.json().period).to.equal('week'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/stats?period=week",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "stats"
+              ],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "week"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Технолог — Материалы",
+      "item": [
+        {
+          "name": "5.1 POST /tech/materials — Создание материала",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"Базальт\",\"CriticalTemperature\":900,\"CapillaryRadius\":0.001,\"CapillaryLength\":0.05,\"Porosity\":0.3,\"Density\":2700}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 GET /tech/materials — Список материалов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Тело — массив', () => pm.expect(arr).to.be.an('array'));",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdMaterialId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 GET /tech/materials/:id — Один материал",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Поле Name', () => pm.expect(pm.response.json().Name).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials/{{createdMaterialId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials",
+                "{{createdMaterialId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 PUT /tech/materials/:id — Обновление",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"Базальт-Обновлённый\",\"CriticalTemperature\":950,\"CapillaryRadius\":0.001,\"CapillaryLength\":0.05,\"Porosity\":0.3,\"Density\":2750}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials/{{createdMaterialId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials",
+                "{{createdMaterialId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.5 DELETE /tech/materials/:id — Удаление",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials/{{createdMaterialId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials",
+                "{{createdMaterialId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Технолог — Компаунды и свойства",
+      "item": [
+        {
+          "name": "6.1 POST /tech/compounds — Создание компаунда",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"Эпоксидная смола ЭД-20\",\"CriticalTemperature\":120}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 GET /tech/compounds — Список компаундов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Тело — массив', () => pm.expect(arr).to.be.an('array'));",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdCompoundId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 POST /tech/compounds/:id/properties — Добавление свойств",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Temperature\":25,\"DynamicViscosity\":1.2,\"SurfaceTension\":0.035,\"Density\":1150,\"UltrasoundSpeed\":1400,\"AcousticImpedance\":1610000}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}",
+                "properties"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.4 GET /tech/compounds/:id/properties — Список свойств",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}",
+                "properties"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 PUT /tech/compounds/:id/properties?temperature=25 — Обновление",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"DynamicViscosity\":1.5,\"SurfaceTension\":0.038,\"Density\":1160,\"UltrasoundSpeed\":1410,\"AcousticImpedance\":1635600}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}/?temperature=25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "temperature",
+                  "value": "25"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.6 PUT /tech/compounds/:id/properties — Без temperature (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"DynamicViscosity\":1.5}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}",
+                "properties"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.7 DELETE /tech/compounds/:id/properties?temperature=25",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}/?temperature=25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "temperature",
+                  "value": "25"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.8 PUT /tech/compounds/:id — Обновление компаунда",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"ЭД-20 (обновл.)\",\"CriticalTemperature\":130}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.9 DELETE /tech/compounds/:id — Удаление компаунда",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/compounds/{{createdCompoundId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "compounds",
+                "{{createdCompoundId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Технолог — Рецепты",
+      "item": [
+        {
+          "name": "7.1 POST /tech/recipes — Создание рецепта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"MaterialID\":1,\"CompoundID\":1,\"Length\":0.1,\"Width\":0.05,\"Height\":0.03,\"Volume\":0.00015,\"SurfaceArea\":0.02,\"Thickness\":0.005,\"MaxCompoundVolume\":0.0002,\"MaxCompoundMass\":0.23,\"KParameter\":0.85,\"EstPower\":500,\"EstTime\":3600,\"EstDepth\":0.004}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "recipes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.2 GET /tech/recipes — Список рецептов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdRecipeId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "recipes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.3 GET /tech/recipes/:id — Один рецепт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/recipes/{{createdRecipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "recipes",
+                "{{createdRecipeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.4 GET /tech/recipes/:id/stats — Статистика рецепта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Поле recipe_id', () => pm.expect(body.recipe_id).to.exist);",
+                  "pm.test('Поле completed_count', () => pm.expect(body.completed_count).to.be.a('number'));",
+                  "pm.test('Поле current_estimates', () => pm.expect(body.current_estimates).to.be.an('object'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/recipes/{{createdRecipeId}}/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "recipes",
+                "{{createdRecipeId}}",
+                "stats"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.5 PUT /tech/recipes/:id — Обновление рецепта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"MaterialID\":1,\"CompoundID\":1,\"EstPower\":550,\"EstTime\":4000,\"EstDepth\":0.005}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/recipes/{{createdRecipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "recipes",
+                "{{createdRecipeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Технолог — Константы",
+      "item": [
+        {
+          "name": "8.1 GET /tech/constants — Список констант",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/constants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "constants"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "8.2 PUT /tech/constants/:id — Обновление константы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"alpha\",\"Value\":0.95}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/constants/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "constants",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Технолог — Экспериментальные заказы",
+      "item": [
+        {
+          "name": "9.1 GET /tech/orders/experimental — Список",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/orders/experimental",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "orders",
+                "experimental"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.2 POST /tech/orders/experimental — Назначение рецепта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const code = pm.response.code;",
+                  "pm.test('Status 201 или 404 (нет рецепта)', () => pm.expect([201, 404]).to.include(code));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"recipe_id\":1}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/orders/experimental",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "orders",
+                "experimental"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "9.3 POST /tech/orders/experimental — Без recipe_id (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/orders/experimental",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "orders",
+                "experimental"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10. Технолог — ML-модели",
+      "item": [
+        {
+          "name": "10.1 GET /tech/ml/models — Список моделей",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/models",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "models"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.2 POST /tech/ml/train — Обучение OLS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const code = pm.response.code;",
+                  "pm.test('Status 201 или 400 (нет данных)', () => pm.expect([201, 400]).to.include(code));",
+                  "if (code === 201) {",
+                  "  pm.collectionVariables.set('createdModelId', pm.response.json().model_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"test_ols\",\"model_type\":\"linear\",\"library\":\"gonum\",\"data_source\":\"recipes\",\"source_ids\":[1,2,3],\"features\":[\"material.density\",\"material.porosity\"],\"targets\":[\"EstPower\"]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/train",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "train"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.3 POST /tech/ml/train — Неизвестная библиотека (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"x\",\"library\":\"sklearn\",\"data_source\":\"recipes\",\"source_ids\":[1],\"features\":[\"material.density\"],\"targets\":[\"EstPower\"]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/train",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "train"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.4 POST /tech/ml/predict — Предсказание",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('createdModelId')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — объект с числами', () => {",
+                  "  const body = pm.response.json();",
+                  "  Object.values(body).forEach(v => pm.expect(v).to.be.a('number'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"model_id\":{{createdModelId}},\"features\":{\"material.density\":2700,\"material.porosity\":0.3}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "predict"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.5 POST /tech/ml/predict — Несуществующая модель (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"model_id\":999999,\"features\":{\"x\":1}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/predict",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "predict"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.6 GET /tech/ml/models/:id — Одна модель",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('createdModelId')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Поле Name', () => pm.expect(pm.response.json().Name).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/models/{{createdModelId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "models",
+                "{{createdModelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.7 PUT /tech/ml/models/:id — Обновление описания",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('createdModelId')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Description\":\"Тестовая OLS-модель\",\"Status\":\"reviewed\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/models/{{createdModelId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "models",
+                "{{createdModelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.8 DELETE /tech/ml/models/:id — Удаление модели",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('createdModelId')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/ml/models/{{createdModelId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "ml",
+                "models",
+                "{{createdModelId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11. Оператор — Установки и наряды",
+      "item": [
+        {
+          "name": "11.1 POST /operator/installations — Создание установки",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"УС-1\",\"MaxPower\":2000,\"MaxAmplitude\":100,\"MinFrequency\":18000,\"MaxFrequency\":40000,\"GatewayIp\":\"192.168.1.10\",\"GatewayPort\":502,\"EmitterUnitID\":1,\"HydrophoneUnitID\":2,\"ThermometerUnitID\":3}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/installations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "installations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.2 GET /operator/installations — Список установок",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Тело — массив', () => pm.expect(arr).to.be.an('array'));",
+                  "if (arr.length > 0) {",
+                  "  pm.collectionVariables.set('createdInstId', arr[arr.length - 1].ID);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/installations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "installations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.3 GET /operator/installations/:id — Одна установка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Поле Name', () => pm.expect(pm.response.json().Name).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/installations/{{createdInstId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "installations",
+                "{{createdInstId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.4 PUT /operator/installations/:id — Обновление",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"Name\":\"УС-1 (обновл.)\",\"MaxPower\":2500,\"MaxAmplitude\":110,\"MinFrequency\":18000,\"MaxFrequency\":40000,\"GatewayIp\":\"192.168.1.10\",\"GatewayPort\":502,\"EmitterUnitID\":1,\"HydrophoneUnitID\":2,\"ThermometerUnitID\":3}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/installations/{{createdInstId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "installations",
+                "{{createdInstId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.5 GET /operator/works/assigned — Назначенные наряды",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Тело — массив', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/works/assigned",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "works",
+                "assigned"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.6 DELETE /operator/installations/:id — Удаление",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/installations/{{createdInstId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "installations",
+                "{{createdInstId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12. RBAC — Проверка доступа по ролям",
+      "item": [
+        {
+          "name": "12.1 Director → /api/tech/materials (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('directorToken')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{directorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12.2 Operator → /api/manager/clients (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('operatorToken')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{operatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "clients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12.3 Technologist → /api/operator/works/assigned (403)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "if (!pm.collectionVariables.get('techToken')) { pm.execution.skipRequest(); }"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{techToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/operator/works/assigned",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "operator",
+                "works",
+                "assigned"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12.4 Admin → /api/tech/materials (200, admin допущен)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tech/materials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tech",
+                "materials"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "directorToken",
+      "value": ""
+    },
+    {
+      "key": "techToken",
+      "value": ""
+    },
+    {
+      "key": "operatorToken",
+      "value": ""
+    },
+    {
+      "key": "createdClientId",
+      "value": ""
+    },
+    {
+      "key": "createdOrderId",
+      "value": ""
+    },
+    {
+      "key": "createdMaterialId",
+      "value": ""
+    },
+    {
+      "key": "createdCompoundId",
+      "value": ""
+    },
+    {
+      "key": "createdRecipeId",
+      "value": ""
+    },
+    {
+      "key": "createdInstId",
+      "value": ""
+    },
+    {
+      "key": "createdModelId",
+      "value": ""
+    }
+  ]
+}
