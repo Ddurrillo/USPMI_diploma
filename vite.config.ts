@@ -27,4 +27,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./client"),
     },
   },
+  define: {
+    __API_BASE__: JSON.stringify(process.env.VITE_API_BASE_URL || ""),
+  },
 });

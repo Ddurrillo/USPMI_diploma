@@ -4,12 +4,12 @@ export interface AuthUser {
   username: string;
   role: UserRole;
 }
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+declare const __API_BASE__: string;
+const API_BASE = typeof __API_BASE__ !== 'undefined' ? __API_BASE__ : "";
 const TOKEN_KEY = "authToken";
 const USER_KEY = "user";
 
-function decodeJwtPayload(token: string): Record<string, unknown> {
+export function decodeJwtPayload(token: string): Record<string, unknown> {
   const [, payload] = token.split(".");
   if (!payload) return {};
   const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
